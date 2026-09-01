@@ -7,8 +7,8 @@
     { "type": "wokwi-lcd1602", "id": "lcd", "top": -220.0, "left": -20.0, "attrs": { "pins": "i2c" } },
     { "type": "wokwi-potentiometer", "id": "pot_batt", "top": 250.0, "left": -120.0, "attrs": { "label": "Battery Volts" } },
     { "type": "wokwi-potentiometer", "id": "pot_current", "top": 250.0, "left": 60.0, "attrs": { "label": "Total Amps" } },
-
-    { "type": "wokwi-relay-module", "id": "relay_high", "top": -140.0, "left": -360.0, "attrs": { "label": "High Relay" } },
+    { "type": "wokwi-buzzer", "id": "alarm_buzzer", "top": -120.0, "left": 220.0 },
+    
     { "type": "wokwi-relay-module", "id": "relay_medium", "top": -140.0, "left": -220.0, "attrs": { "label": "Medium Relay" } },
     { "type": "wokwi-relay-module", "id": "relay_low", "top": -80.0, "left": 300.0, "attrs": { "label": "Low Relay" } },
     
