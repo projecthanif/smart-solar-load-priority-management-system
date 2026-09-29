@@ -1,54 +1,82 @@
 {
   "version": 1,
-  "author": "Smart Solar Priority System",
+  "author": "Smart Solar Load Priority Management System",
   "editor": "wokwi",
   "parts": [
-    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -40.0, "left": 0.0 },
-    { "type": "wokwi-lcd1602", "id": "lcd", "top": -220.0, "left": -20.0, "attrs": { "pins": "i2c" } },
-    { "type": "wokwi-potentiometer", "id": "pot_batt", "top": 250.0, "left": -120.0, "attrs": { "label": "Battery Volts" } },
-    { "type": "wokwi-potentiometer", "id": "pot_current", "top": 250.0, "left": 60.0, "attrs": { "label": "Total Amps" } },
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-lcd1602", "id": "lcd", "top": -236.8, "left": -44, "attrs": { "pins": "i2c" } },
 
-    { "type": "wokwi-relay-module", "id": "relay_high", "top": -140.0, "left": -360.0, "attrs": { "label": "High Relay" } },
-    { "type": "wokwi-relay-module", "id": "relay_medium", "top": -140.0, "left": -220.0, "attrs": { "label": "Medium Relay" } },
-    { "type": "wokwi-relay-module", "id": "relay_low", "top": -80.0, "left": 300.0, "attrs": { "label": "Low Relay" } },
-    
-    { "type": "wokwi-led", "id": "led_high_priority", "top": 40.0, "left": -450.0, "attrs": { "color": "green", "label": "HIGH (Essential) - Always ON" } },
-    { "type": "wokwi-led", "id": "led_medium_priority", "top": 150.0, "left": -550.0, "attrs": { "color": "yellow", "label": "MEDIUM Load" } },
-    { "type": "wokwi-led", "id": "led_low_priority", "top": 40.0, "left": 430.0, "attrs": { "color": "red", "label": "LOW Load" } }
+    { "type": "wokwi-slide-potentiometer", "id": "pot_batt", "top": 280, "left": -250, "attrs": { "travelLength": "30" } },
+    { "type": "wokwi-text", "id": "lbl_batt", "top": 250, "left": -250, "attrs": { "text": "BATTERY BUS  0-62.7 V\n(30.0 V = 0%  51.5 V = 100%)" } },
+    { "type": "wokwi-slide-potentiometer", "id": "pot_current", "top": 280, "left": 60, "attrs": { "travelLength": "30" } },
+    { "type": "wokwi-text", "id": "lbl_curr", "top": 250, "left": 60, "attrs": { "text": "LOAD CURRENT  0-30 A\n(trip 20 A sustained / 26 A hard)" } },
+
+    { "type": "wokwi-relay-module", "id": "relay_crit", "top": -100, "left": -420, "attrs": {} },
+    { "type": "wokwi-text", "id": "lbl_rc", "top": -125, "left": -420, "attrs": { "text": "CRITICAL relay (shed <=10%)" } },
+    { "type": "wokwi-relay-module", "id": "relay_ess", "top": 10, "left": -420, "attrs": {} },
+    { "type": "wokwi-text", "id": "lbl_re", "top": -15, "left": -420, "attrs": { "text": "ESSENTIAL relay (shed <=33%)" } },
+    { "type": "wokwi-relay-module", "id": "relay_non", "top": 120, "left": -420, "attrs": {} },
+    { "type": "wokwi-text", "id": "lbl_rn", "top": 95, "left": -420, "attrs": { "text": "NON-ESSENTIAL relay (shed <=66%)" } },
+
+    { "type": "wokwi-led", "id": "led_crit", "top": -80, "left": 250, "attrs": { "color": "green" } },
+    { "type": "wokwi-resistor", "id": "r_crit", "top": -30, "left": 280, "rotate": 90, "attrs": { "value": "220" } },
+    { "type": "wokwi-text", "id": "lbl_lc", "top": -105, "left": 230, "attrs": { "text": "CRITICAL" } },
+    { "type": "wokwi-led", "id": "led_ess", "top": -80, "left": 330, "attrs": { "color": "yellow" } },
+    { "type": "wokwi-resistor", "id": "r_ess", "top": -30, "left": 360, "rotate": 90, "attrs": { "value": "220" } },
+    { "type": "wokwi-text", "id": "lbl_le", "top": -105, "left": 310, "attrs": { "text": "ESSENTIAL" } },
+    { "type": "wokwi-led", "id": "led_non", "top": -80, "left": 410, "attrs": { "color": "red" } },
+    { "type": "wokwi-resistor", "id": "r_non", "top": -30, "left": 440, "rotate": 90, "attrs": { "value": "220" } },
+    { "type": "wokwi-text", "id": "lbl_ln", "top": -105, "left": 395, "attrs": { "text": "NON-ESS" } },
+
+    { "type": "wokwi-buzzer", "id": "bz", "top": 60, "left": 250, "attrs": { "volume": "0.2" } },
+    { "type": "wokwi-text", "id": "lbl_bz", "top": 40, "left": 230, "attrs": { "text": "ALARM (GPIO 4)" } },
+
+    { "type": "wokwi-servo", "id": "fan", "top": 60, "left": -700, "attrs": { "hornColor": "#2266cc" } },
+    { "type": "wokwi-text", "id": "lbl_fan", "top": 30, "left": -700, "attrs": { "text": "CEILING FAN load\n(powered via ESSENTIAL relay COM/NO)" } }
   ],
   "connections": [
-    [ "esp:GND.1", "pot_batt:GND", "black", [] ],
-    [ "esp:GND.1", "pot_current:GND", "black", [] ],
-    [ "esp:GND.1", "lcd:GND", "black", [] ],
-    [ "esp:GND.1", "relay_high:GND", "black", [ "v20", "h-70" ] ],
-    [ "esp:GND.1", "relay_medium:GND", "black", [ "v20", "h-50" ] ],
-    [ "esp:GND.1", "relay_low:GND", "black", [ "v20", "h50" ] ],
-    [ "esp:GND.1", "led_high_priority:C", "black", [ "v-30", "h-50", "v-20" ] ],
-    [ "esp:GND.1", "led_medium_priority:C", "black", [ "v40", "h-80", "v-20" ] ],
-    [ "esp:GND.1", "led_low_priority:C", "black", [ "v40", "h110", "v-20" ] ],
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
 
-    [ "esp:3V3", "pot_batt:VCC", "red", [] ],
-    [ "esp:3V3", "pot_current:VCC", "red", [] ],
-    [ "esp:3V3", "led_high_priority:A", "red", [ "h-50", "v-20", "h-30", "v-20" ] ], 
-    
     [ "esp:5V", "lcd:VCC", "red", [] ],
-    [ "esp:5V", "relay_high:VCC", "red", [ "v-20", "h-80" ] ],
-    [ "esp:5V", "relay_medium:VCC", "red", [ "v-20", "h-60" ] ],
-    [ "esp:5V", "relay_low:VCC", "red", [ "v-20", "h60" ] ],
-
-    [ "pot_batt:SIG", "esp:34", "blue", [] ],
-    [ "pot_current:SIG", "esp:32", "orange", [] ],
-    
+    [ "esp:GND.1", "lcd:GND", "black", [] ],
     [ "esp:21", "lcd:SDA", "green", [] ],
     [ "esp:22", "lcd:SCL", "yellow", [] ],
 
-    [ "esp:5", "relay_high:IN", "green", [ "v30", "h-120" ] ],
+    [ "esp:3V3", "pot_batt:VCC", "red", [] ],
+    [ "esp:GND.1", "pot_batt:GND", "black", [] ],
+    [ "pot_batt:SIG", "esp:34", "blue", [] ],
+    [ "esp:3V3", "pot_current:VCC", "red", [] ],
+    [ "esp:GND.1", "pot_current:GND", "black", [] ],
+    [ "pot_current:SIG", "esp:32", "orange", [] ],
 
-    [ "esp:18", "relay_medium:IN", "blue", [ "v30", "h-90" ] ],
-    [ "esp:18", "led_medium_priority:A", "yellow", [ "h-50", "v50", "h-100", "v-20" ] ],
-    
-    [ "esp:19", "relay_low:IN", "purple", [ "v30", "h90" ] ],
-    [ "esp:19", "led_low_priority:A", "blue", [ "h-50","v50", "h110", "v-20" ] ]
+    [ "esp:5V", "relay_crit:VCC", "red", [] ],
+    [ "esp:GND.1", "relay_crit:GND", "black", [] ],
+    [ "esp:5", "relay_crit:IN", "green", [] ],
+    [ "esp:5V", "relay_ess:VCC", "red", [] ],
+    [ "esp:GND.1", "relay_ess:GND", "black", [] ],
+    [ "esp:18", "relay_ess:IN", "blue", [] ],
+    [ "esp:5V", "relay_non:VCC", "red", [] ],
+    [ "esp:GND.1", "relay_non:GND", "black", [] ],
+    [ "esp:19", "relay_non:IN", "purple", [] ],
+
+    [ "esp:5", "led_crit:A", "green", [] ],
+    [ "led_crit:C", "r_crit:1", "black", [] ],
+    [ "r_crit:2", "esp:GND.2", "black", [] ],
+    [ "esp:18", "led_ess:A", "blue", [] ],
+    [ "led_ess:C", "r_ess:1", "black", [] ],
+    [ "r_ess:2", "esp:GND.2", "black", [] ],
+    [ "esp:19", "led_non:A", "purple", [] ],
+    [ "led_non:C", "r_non:1", "black", [] ],
+    [ "r_non:2", "esp:GND.2", "black", [] ],
+
+    [ "esp:4", "bz:2", "orange", [] ],
+    [ "bz:1", "esp:GND.2", "black", [] ],
+
+    [ "esp:5V", "relay_ess:COM", "red", [] ],
+    [ "relay_ess:NO", "fan:V+", "red", [] ],
+    [ "fan:GND", "esp:GND.1", "black", [] ],
+    [ "esp:23", "fan:PWM", "orange", [] ]
   ],
   "dependencies": {}
 }
